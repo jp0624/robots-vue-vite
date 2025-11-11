@@ -1,29 +1,40 @@
-<script setup lang="ts">
-	import { defineProps } from "vue";
+<template>
+	<div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+		<h3 class="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
+			Robot Positions
+		</h3>
 
+		<div class="space-y-2 max-h-60 overflow-y-auto">
+			<div
+				v-for="robot in robotPositions"
+				:key="robot.id"
+				class="flex justify-between items-center text-sm p-3 rounded-lg border transition duration-100 ease-in-out hover:bg-gray-50"
+			>
+				<div class="flex items-center space-x-3">
+					<!-- Color Indicator (Option 2) -->
+					<div :class="['w-4 h-4 rounded-full shadow', robot.colorClass]"></div>
+
+					<span class="font-semibold text-gray-800">{{ robot.name }}</span>
+					<span class="text-xs text-gray-500">(ID: {{ robot.id }})</span>
+				</div>
+
+				<span class="font-bold text-indigo-600 text-lg font-mono">{{
+					robot.position
+				}}</span>
+			</div>
+		</div>
+	</div>
+</template>
+
+<script setup lang="ts">
 	interface RobotPosition {
 		id: number;
 		name: string;
 		position: string;
+		colorClass: string; // Tailwind class for color (e.g., 'bg-red-500')
 	}
 
-	const props = defineProps<{
+	defineProps<{
 		robotPositions: RobotPosition[];
 	}>();
 </script>
-
-<template>
-	<h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">Robot Positions</h3>
-	<ul class="space-y-1">
-		<li
-			v-for="robot in robotPositions"
-			:key="robot.id"
-			class="flex justify-between items-center text-sm p-1 rounded-md bg-gray-50"
-		>
-			<span class="font-mono text-gray-700"
-				>{{ robot.name }} (ID: {{ robot.id }})</span
-			>
-			<span class="font-bold text-indigo-500">{{ robot.position }}</span>
-		</li>
-	</ul>
-</template>

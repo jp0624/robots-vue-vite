@@ -1,39 +1,54 @@
+<template>
+	<div
+		class="inline-block p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50 max-h-[80vh] overflow-auto"
+	>
+		<div
+			v-for="row in houseGrid.rows"
+			:key="`y-${row[0].y}`"
+			class="flex flex-nowrap"
+		>
+			<GridTile
+				v-for="tile in row"
+				:key="tile.key"
+				:x="tile.x"
+				:y="tile.y"
+				:presents="tile.presents"
+				:robots-present="tile.robotsPresent"
+			/>
+		</div>
+	</div>
+	<p class="mt-4 text-sm text-gray-500">
+		Grid shows visited tiles and current robot locations. **Positive Y is up,
+		Negative Y is down.** The grid dynamically expands to show all visited
+		houses and robot positions, maintaining a center around (0,0).
+	</p>
+</template>
+
 <script setup lang="ts">
-	import { defineProps } from "vue";
 	import GridTile from "./GridTile.vue";
 
-	interface TileData {
+	interface RobotPresence {
+		id: number;
+		colorClass: string; // e.g., 'bg-red-500'
+	}
+
+	interface Tile {
 		x: number;
 		y: number;
 		key: string;
 		presents: number;
-		robotIds: number[];
+		robotsPresent: RobotPresence[];
 	}
 
-	interface HouseGridData {
-		rows: TileData[][];
+	interface HouseGrid {
+		rows: Tile[][];
+		minX: number;
+		minY: number;
+		maxX: number;
+		maxY: number;
 	}
 
-	const props = defineProps<{
-		houseGrid: HouseGridData;
+	defineProps<{
+		houseGrid: HouseGrid;
 	}>();
 </script>
-
-<template>
-	<div
-		class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 overflow-x-auto"
-	>
-		<h2 class="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
-			World Grid View
-		</h2>
-		<div class="inline-block">
-			<div v-for="row in houseGrid.rows" :key="`y-${row[0].y}`" class="flex">
-				<GridTile v-for="tile in row" :key="tile.key" :tileData="tile" />
-			</div>
-		</div>
-		<p class="mt-4 text-sm text-gray-500">
-			Grid shows visited tiles and current robot locations. Blue tile is the
-			(0,0) origin. **Positive Y is up, Negative Y is down.**
-		</p>
-	</div>
-</template>

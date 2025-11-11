@@ -1,42 +1,92 @@
+<template>
+	<div class="p-6 bg-gray-50 min-h-screen font-sans">
+		<div class="flex items-center mb-4">
+			<!-- Robot Logo --><img
+				src="/robot-delivery-logo.png"
+				alt="Robbie's Present Delivery Logo"
+				class="h-[10em] w-[10em] mr-3 object-contain"
+			/>
+			<h1 class="text-3xl font-extrabold text-blue-800">
+				Robbie's Present Delivery Simulator
+			</h1>
+		</div>
+		<p class="text-gray-600 mb-6">
+			Simulate {{ numRobotsInput }} robots delivering presents based on movement
+			rules and collision checks.
+		</p>
+
+		<!-- Controls Wrapper --><SimulationControls
+			:num-robots-input="numRobotsInput"
+			:move-sequence-input="moveSequenceInput"
+			:is-running="isRunning"
+			:move-index="moveIndex"
+			:move-sequence-length="moveSequenceInput.length"
+			:steps-per-second="stepsPerSecond"
+			:can-step-back="canStepBack"
+			@update:num-robots-input="numRobotsInput = $event"
+			@update:move-sequence-input="moveSequenceInput = $event"
+			@update:steps-per-second="stepsPerSecond = $event"
+			@run-full="runFullSimulation"
+			@start-viz="startVisualization"
+			@stop-viz="stopSimulationInterval"
+			@step-forward="step"
+			@step-back="stepBack"
+			@reset="initializeSimulation"
+		/>
+
+		<!-- Status and Results -->
+		<div class="grid lg:grid-cols-3 gap-8">
+			<!-- Visualization Grid (Takes 2/3 width on large screens) -->
+			<div
+				class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg border border-gray-200 overflow-x-auto"
+			>
+				<h2 class="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
+					World Grid View
+				</h2>
+				<WorldGrid :house-grid="houseGrid" :robots="robots" />
+			</div>
+
+			<!-- Stats and Legend (Takes 1/3 width on large screens) -->
+			<div class="lg:col-span-1">
+				<SimulationStats
+					:simulation-message="simulationMessage"
+					:simulation-status="simulationStatus"
+					:total-presents="totalPresents"
+					:unique-houses-with-one-present="uniqueHousesWithOnePresent"
+					:robot-positions="robotPositions"
+				/>
+			</div>
+		</div>
+	</div>
+</template>
+
 <script setup lang="ts">
 	import { ref, computed, watch } from "vue";
 	import SimulationControls from "./components/SimulationControls.vue";
 	import SimulationStats from "./components/SimulationStats.vue";
 	import WorldGrid from "./components/WorldGrid.vue";
 
-	// --- Types and Interfaces (Shared across files for clarity) ---
+	// --- Types and Interfaces ---
 
 	interface Robot {
 		id: number;
 		x: number;
 		y: number;
 		name: string;
+		colorClass: string; // Tailwind class for color (e.g., 'bg-red-500')
+	}
+
+	// History tracks the state *before* a move is executed
+	interface MoveRecord {
+		robotIndex: number;
+		prevX: number;
+		prevY: number;
+		housesSnapshot: Houses;
+		presentsDeliveredBefore: number;
 	}
 
 	// Map for house state: Key is "x,y", Value is the number of presents delivered.
 	type Houses = Map<string, number>;
-
-	interface TileData {
-		x: number;
-		y: number;
-		key: string;
-		presents: number;
-		robotIds: number[];
-	}
-
-	interface HouseGridData {
-		rows: TileData[][];
-		minX: number;
-		minY: number;
-		maxX: number;
-		maxY: number;
-	}
-
-	interface RobotPosition {
-		id: number;
-		name: string;
-		position: string;
-	}
 
 	// --- Constants ---
 
@@ -60,6 +110,19 @@
 		"Henry",
 	];
 
+	const ROBOT_COLORS: string[] = [
+		"bg-red-500",
+		"bg-green-500",
+		"bg-blue-500",
+		"bg-yellow-500",
+		"bg-purple-500",
+		"bg-pink-500",
+		"bg-indigo-500",
+		"bg-teal-500",
+		"bg-orange-500",
+		"bg-cyan-500",
+	];
+
 	// --- Reactive State ---
 
 	const numRobotsInput = ref(3);
@@ -69,20 +132,88 @@
 	const houses = ref<Houses>(new Map());
 	const moveIndex = ref(0);
 	const totalPresentsDelivered = ref(0);
+	const moveHistory = ref<MoveRecord[]>([]); // New state for tracking history
 
 	const isRunning = ref(false);
 	const simulationMessage = ref("");
-	const stepsPerSecond = ref(10);
+	const stepsPerSecond = ref(10); // For the visualization speed
 
 	let simulationInterval: number | null = null;
 
-	// --- Core Logic ---
+	// --- Computed Properties (Query Operations) ---
 
+	/** Query 1: Current position of the robots */
+	const robotPositions = computed(() => {
+		return robots.value.map((r) => ({
+			id: r.id,
+			name: r.name,
+			position: `(${r.x}, ${r.y})`,
+			colorClass: r.colorClass, // Include color for list visualization
+		}));
+	});
+
+	/** Query 2: Total number of presents delivered */
+	const totalPresents = computed(() => totalPresentsDelivered.value);
+
+	/** Query 3: Number of houses with at least N presents */
+	const uniqueHousesQuery = computed(() => (minPresents: number) => {
+		if (!houses.value) return 0;
+		let count = 0;
+		for (const presents of houses.value.values()) {
+			if (presents >= minPresents) {
+				count++;
+			}
+		}
+		return count;
+	});
+
+	const uniqueHousesWithOnePresent = computed(() => uniqueHousesQuery.value(1));
+
+	/** Determines if the step back button should be enabled */
+	const canStepBack = computed(
+		() => moveHistory.value.length > 0 && !isRunning.value
+	);
+
+	// --- Core Logic: History Management ---
+
+	/**
+	 * Reverts the simulation state by one move.
+	 */
+	function stepBack() {
+		if (isRunning.value || moveHistory.value.length === 0) return;
+
+		const lastMove = moveHistory.value.pop();
+		if (!lastMove) return;
+
+		const robot = robots.value[lastMove.robotIndex];
+
+		// 1. Revert Robot Position
+		robot.x = lastMove.prevX;
+		robot.y = lastMove.prevY;
+
+		// 2. Revert House State
+		houses.value = lastMove.housesSnapshot;
+
+		// 3. Revert Total Presents
+		totalPresentsDelivered.value = lastMove.presentsDeliveredBefore;
+
+		// 4. Revert Move Index
+		moveIndex.value = moveIndex.value - 1;
+
+		simulationMessage.value = `Stepped back to move ${moveIndex.value}. Robot ${robot.name} position reverted.`;
+	}
+
+	// --- Core Logic: Simulation Control ---
+
+	/**
+	 * Initializes the simulation state based on user input.
+	 */
 	function initializeSimulation() {
+		stopSimulationInterval();
 		const num = numRobotsInput.value > 0 ? numRobotsInput.value : 1;
 
-		if (num > INITIAL_ROBOT_NAMES.length) {
-			simulationMessage.value = `Warning: Cannot name ${num} robots. Using IDs for extra robots.`;
+		if (num > ROBOT_COLORS.length) {
+			simulationMessage.value = `Warning: More robots than colors available (${ROBOT_COLORS.length}). Colors will repeat.`;
 		} else {
 			simulationMessage.value = "Simulation initialized.";
 		}
@@ -92,17 +223,23 @@
 			name: INITIAL_ROBOT_NAMES[i] || `Robot ${i}`,
 			x: 0,
 			y: 0,
+			colorClass: ROBOT_COLORS[i % ROBOT_COLORS.length], // Assign unique color
 		}));
-		houses.value = new Map();
-		// Deliver the first present at (0,0) before any moves, as per the problem standard
-		houses.value.set("0,0", 1);
-		totalPresentsDelivered.value = 1;
 
+		// Start the simulation with one present at the origin (0,0)
+		const initialHouses = new Map<string, number>();
+		initialHouses.set("0,0", 1);
+
+		houses.value = initialHouses;
 		moveIndex.value = 0;
+		totalPresentsDelivered.value = 1;
 		isRunning.value = false;
-		stopSimulationInterval();
+		moveHistory.value = []; // Reset history
 	}
 
+	/**
+	 * Executes a single robot's turn based on the current move index.
+	 */
 	function step() {
 		if (moveIndex.value >= moveSequenceInput.value.length) {
 			stopSimulationInterval();
@@ -121,6 +258,15 @@
 			moveIndex.value++;
 			return;
 		}
+
+		// --- RECORD HISTORY BEFORE MOVE ---
+		moveHistory.value.push({
+			robotIndex: robotIndex,
+			prevX: robot.x,
+			prevY: robot.y,
+			housesSnapshot: new Map(houses.value), // Deep copy of the Houses map
+			presentsDeliveredBefore: totalPresentsDelivered.value,
+		});
 
 		// 1. Calculate new position
 		const newX = robot.x + move[0];
@@ -146,6 +292,7 @@
 		// 4. Deliver present if no collision
 		if (!collision) {
 			const key = `${newX},${newY}`;
+			// Use a temporary map to trigger Vue reactivity correctly on map update
 			const newHouses = new Map(houses.value);
 			newHouses.set(key, (newHouses.get(key) || 0) + 1);
 			houses.value = newHouses;
@@ -156,28 +303,42 @@
 		moveIndex.value++;
 	}
 
+	/**
+	 * Runs the entire simulation sequence immediately.
+	 */
 	function runFullSimulation() {
 		stopSimulationInterval();
 		initializeSimulation();
 		isRunning.value = true;
+		// Step through all moves instantly
 		while (moveIndex.value < moveSequenceInput.value.length) {
 			step();
 		}
 		isRunning.value = false;
 	}
 
+	/**
+	 * Starts the interval for step-by-step visualization.
+	 */
 	function startVisualization() {
 		stopSimulationInterval();
 		initializeSimulation();
 		isRunning.value = true;
+
+		// Use stepsPerSecond to set the interval speed
+		const intervalMs = 1000 / stepsPerSecond.value;
+
 		simulationInterval = setInterval(() => {
 			step();
 			if (moveIndex.value >= moveSequenceInput.value.length) {
 				stopSimulationInterval();
 			}
-		}, 1000 / stepsPerSecond.value);
+		}, intervalMs);
 	}
 
+	/**
+	 * Stops the visualization interval.
+	 */
 	function stopSimulationInterval() {
 		if (simulationInterval !== null) {
 			clearInterval(simulationInterval);
@@ -186,69 +347,33 @@
 		}
 	}
 
-	// Watch inputs and reset simulation when they change
-	watch([numRobotsInput, moveSequenceInput], () => {
+	// --- Watchers for Auto-Reset on Input Change ---
+
+	// Automatically re-initialize when N changes
+	watch(numRobotsInput, () => {
+		initializeSimulation();
+	});
+
+	// Automatically re-initialize when the move sequence changes
+	watch(moveSequenceInput, () => {
 		initializeSimulation();
 	});
 
 	// Initialize on load
 	initializeSimulation();
 
-	// --- Computed Properties (Data for Components) ---
+	// --- Helper for UI visualization ---
 
-	const robotPositions = computed<RobotPosition[]>(() => {
-		return robots.value.map((r) => ({
-			id: r.id,
-			name: r.name,
-			position: `(${r.x}, ${r.y})`,
-		}));
-	});
-
-	const totalPresents = computed(() => totalPresentsDelivered.value);
-
-	const uniqueHousesWithOnePresent = computed(() => {
-		if (!houses.value) return 0;
-		let count = 0;
-		for (const presents of houses.value.values()) {
-			if (presents >= 1) {
-				count++;
-			}
-		}
-		return count;
-	});
-
-	const simulationStatus = computed(() => {
-		const totalMoves = moveSequenceInput.value.length;
-		const numRobots = numRobotsInput.value > 0 ? numRobotsInput.value : 1;
-
-		if (moveIndex.value >= totalMoves) {
-			return `Simulation Ended: ${Math.ceil(
-				totalMoves / numRobots
-			)} Turns Complete.`;
-		}
-
-		const currentTurn = Math.floor(moveIndex.value / numRobots) + 1;
-		const currentRobot = robots.value[moveIndex.value % numRobots];
-		const totalTurns = Math.ceil(totalMoves / numRobots);
-
-		if (!currentRobot) return "Ready to start.";
-
-		return `Turn ${currentTurn} of ${totalTurns} (Move ${
-			moveIndex.value + 1
-		}/${totalMoves}): ${currentRobot.name} moves '${
-			moveSequenceInput.value[moveIndex.value]
-		}'`;
-	});
-
-	const houseGrid = computed<HouseGridData>(() => {
-		if (houses.value.size === 0)
-			return { rows: [], minX: 0, minY: 0, maxX: 0, maxY: 0 };
-
+	/**
+	 * Generates the house grid for visualization.
+	 */
+	const houseGrid = computed(() => {
 		let minX = 0,
 			minY = 0,
 			maxX = 0,
 			maxY = 0;
 
+		// Include visited houses in bounds calculation
 		for (const key of houses.value.keys()) {
 			const [x, y] = key.split(",").map(Number);
 			minX = Math.min(minX, x);
@@ -257,6 +382,7 @@
 			maxY = Math.max(maxY, y);
 		}
 
+		// Include current robot positions in the bounds
 		robots.value.forEach((r) => {
 			minX = Math.min(minX, r.x);
 			minY = Math.min(minY, r.y);
@@ -264,66 +390,72 @@
 			maxY = Math.max(maxY, r.y);
 		});
 
+		// Ensure a minimum 11x11 grid centered at (0,0)
+		minX = Math.min(minX, -5);
+		minY = Math.min(minY, -5);
+		maxX = Math.max(maxX, 5);
+		maxY = Math.max(maxY, 5);
+
 		// Extend bounds slightly for padding
-		minX -= 2;
-		minY -= 2;
-		maxX += 2;
-		maxY += 2;
+		minX -= 1;
+		minY -= 1;
+		maxX += 1;
+		maxY += 1;
 
-		const rows: TileData[][] = [];
+		const rows = [];
 
-		// Render Y from Max (Top) to Min (Bottom) for Cartesian display
+		// This iteration ensures the Cartesian Y-axis flip for display:
+		// Starting at the max Y (Top) and decreasing to min Y (Bottom).
 		for (let y = maxY; y >= minY; y--) {
-			const row: TileData[] = [];
-			// Render X from Min (Left) to Max (Right)
+			const row = [];
+			// Iterating X from min (Left) to max (Right).
 			for (let x = minX; x <= maxX; x++) {
 				const key = `${x},${y}`;
 				const presents = houses.value.get(key) || 0;
-				const robotIds = robots.value
-					.filter((r) => r.x === x && r.y === y)
-					.map((r) => r.id);
 
-				row.push({ x, y, key, presents, robotIds });
+				const robotsPresent = robots.value
+					.filter((r) => r.x === x && r.y === y)
+					.map((r) => ({
+						id: r.id,
+						colorClass: r.colorClass,
+					}));
+
+				row.push({ x, y, key, presents, robotsPresent });
 			}
 			rows.push(row);
 		}
 
 		return { rows, minX, minY, maxX, maxY };
 	});
+
+	const simulationStatus = computed(() => {
+		const totalMoves = moveSequenceInput.value.length;
+		const numRobots = numRobotsInput.value;
+
+		if (totalMoves === 0) return "Ready to start. Enter a move sequence.";
+
+		const currentMoveIndex = moveIndex.value;
+
+		if (currentMoveIndex >= totalMoves) {
+			const totalTurns = Math.ceil(totalMoves / numRobots);
+			return `Simulation Ended: ${totalTurns} Turns Complete.`;
+		}
+
+		const robotIndex = currentMoveIndex % numRobots;
+		const currentRobot = robots.value[robotIndex];
+		const currentTurn = Math.floor(currentMoveIndex / numRobots) + 1;
+		const totalTurns = Math.ceil(totalMoves / numRobots);
+
+		if (!currentRobot) return "Ready to start.";
+
+		return `Turn ${currentTurn} of ${totalTurns} (Move ${
+			currentMoveIndex + 1
+		}/${totalMoves}): ${currentRobot.name} moves '${
+			moveSequenceInput.value[currentMoveIndex]
+		}'`;
+	});
 </script>
 
-<template>
-	<div class="p-6 bg-gray-50 min-h-screen font-sans">
-		<h1 class="text-3xl font-extrabold text-blue-800 mb-4">
-			Robbie's Present Delivery Simulator
-		</h1>
-		<p class="text-gray-600 mb-6">
-			Simulate {{ numRobotsInput }} robots delivering presents based on movement
-			rules and collision checks.
-		</p>
-
-		<SimulationControls
-			v-model:numRobotsInput="numRobotsInput"
-			v-model:moveSequenceInput="moveSequenceInput"
-			:isRunning="isRunning"
-			:isSimulationComplete="moveIndex >= moveSequenceInput.length"
-			@runFull="runFullSimulation"
-			@startViz="startVisualization"
-			@stopViz="stopSimulationInterval"
-			@step="step"
-			@reset="initializeSimulation"
-		/>
-
-		<div class="grid md:grid-cols-2 gap-8">
-			<SimulationStats
-				:simulationMessage="simulationMessage"
-				:simulationStatus="simulationStatus"
-				:totalPresents="totalPresents"
-				:uniqueHousesWithOnePresent="uniqueHousesWithOnePresent"
-				:robotPositions="robotPositions"
-			/>
-
-			<WorldGrid :houseGrid="houseGrid" />
-		</div>
-	</div>
-</template>
+<style scoped>
+	/* Standard styles moved to GridTile.vue for modularity, but basic layout remains here */
+</style>
