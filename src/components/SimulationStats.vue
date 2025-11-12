@@ -9,7 +9,7 @@
 		/>
 
 		<!-- Robot Positions (Includes unique colors from Option 2) -->
-		<RobotPositionList :robot-positions="robotPositions as RobotPosition[]" />
+		<RobotPositionList :robot-positions="robotPositions" />
 
 		<!-- Grid Legend (Option 5) -->
 		<GridLegend />
@@ -20,13 +20,6 @@
 	import StatSummary from "./StatSummary.vue";
 	import RobotPositionList from "./RobotPositionList.vue";
 	import GridLegend from "./GridLegend.vue";
-
-	interface RobotPosition {
-		id: number;
-		name: string;
-		position: string;
-		colorClass: string;
-	}
 
 	defineProps<{
 		simulationMessage: string;
