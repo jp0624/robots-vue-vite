@@ -34,7 +34,7 @@
 			<!-- Robots (Example Color) -->
 			<div class="flex items-center space-x-3">
 				<div class="w-6 h-6 flex items-center justify-center">
-					<div class="w-4 h-4 bg-red-500 text-white rounded-full shadow-lg">
+					<div class="w-4 h-4 bg-slate-500 text-white rounded-full shadow-lg">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-4 w-4"
@@ -46,8 +46,6 @@
 							stroke-linejoin="round"
 						>
 							<circle cx="12" cy="12" r="10"></circle>
-							<path d="M16 12H8"></path>
-							<path d="M12 8V16"></path>
 						</svg>
 					</div>
 				</div>
@@ -60,6 +58,16 @@
 			<div class="flex items-center space-x-3">
 				<div class="w-6 h-6 bg-white border border-gray-200 rounded-md"></div>
 				<span class="text-gray-700">Unvisited/Empty Tile.</span>
+			</div>
+
+			<!-- Collision -->
+			<div class="flex items-center space-x-3">
+				<div
+					class="w-6 h-6 bg-red-400 border animate-pulse border-red-600 rounded-md"
+				></div>
+				<span class="text-gray-700"
+					>Collision Detected (No Present Delivered)</span
+				>
 			</div>
 		</div>
 	</div>
