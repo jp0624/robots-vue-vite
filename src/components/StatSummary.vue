@@ -6,7 +6,7 @@
 
 		<div class="p-3 mb-4 rounded-lg" :class="statusClass">
 			<p class="font-medium text-sm">{{ simulationMessage }}</p>
-			<p class="text-lg font-bold">{{ simulationStatus }}</p>
+			<p class="text-md font-bold">{{ simulationStatus }}</p>
 		</div>
 
 		<div class="space-y-1 flex border-t text-sm">
@@ -30,19 +30,22 @@
 	import { computed } from "vue";
 
 	const props = defineProps<{
-		simulationMessage: string;
-		simulationStatus: string;
-		totalPresents: number;
-		uniqueHousesWithOnePresent: number;
+		simulationMessage?: string;
+		simulationStatus?: string;
+		totalPresents?: number;
+		uniqueHousesWithOnePresent?: number;
 	}>();
 
+	// Default to empty string to avoid calling .includes on undefined
 	const statusClass = computed(() => {
-		if (props.simulationStatus.includes("Simulation Ended")) {
+		const status = props.simulationStatus ?? "";
+
+		if (status.includes("Simulation Ended")) {
 			return "bg-green-100 text-green-800 border border-green-300";
 		}
-		if (props.simulationStatus.includes("Ready to start")) {
+		if (status.includes("Ready to start")) {
 			return "bg-blue-100 text-blue-800 border border-blue-300";
 		}
-		return "bg-gray-100 text-gray-800 border border-gray-300";
+		return "bg-gray-50 text-gray-800 border border-gray-300";
 	});
 </script>

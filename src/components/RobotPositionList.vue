@@ -8,7 +8,7 @@
 			<div
 				v-for="robot in robotPositions"
 				:key="robot.id"
-				class="flex justify-between items-center text-sm p-3 rounded-lg border transition duration-100 ease-in-out hover:bg-gray-50"
+				class="flex justify-between border-gray-300 items-center text-sm p-3 rounded-lg border transition duration-100 ease-in-out bg-gray-50"
 			>
 				<div class="flex items-center space-x-3">
 					<div :class="['w-4 h-4 rounded-full shadow', robot.colorClass]"></div>

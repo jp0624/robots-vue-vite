@@ -13,7 +13,7 @@
 
 		<!-- Robots with tooltip -->
 		<div
-			v-for="robot in robotsPresent"
+			v-for="robot in robotsPresent || []"
 			:key="robot.id"
 			class="absolute w-3 h-3 rounded-full flex items-center justify-center text-[0.5rem] text-white shadow-sm hover:scale-110 transition-transform duration-300 group"
 			:class="[robot.colorClass, robot.collision ? 'ring-2 ring-red-500' : '']"
@@ -45,7 +45,7 @@
 		y: number;
 		presents: number;
 		hasCollision: boolean;
-		robotsPresent: Array<{
+		robotsPresent?: Array<{
 			id: number;
 			name: string;
 			colorClass: string;

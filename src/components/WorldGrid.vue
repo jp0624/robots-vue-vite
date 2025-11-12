@@ -16,7 +16,7 @@
 					:x="tile.x"
 					:y="tile.y"
 					:presents="tile.presents"
-					:hasCollision="tile.robotsPresent.some((r) => r.collision)"
+					:hasCollision="tile.robotsPresent?.some((r) => r.collision) || false"
 				/>
 			</div>
 
@@ -30,7 +30,7 @@
 					:style="robotStyle(robot)"
 					aria-hidden="false"
 				>
-					<!-- Tooltip (appears on hover of the robot) -->
+					<!-- Tooltip -->
 					<span
 						class="robot-tooltip absolute -top-3 left-1/2 transform -translate-x-1/2 translate-y-[-100%] opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-opacity duration-200 text-xs whitespace-nowrap rounded px-2 py-1 z-50"
 						role="tooltip"
@@ -64,8 +64,7 @@
 	const tileSize = props.tileSize || 48;
 
 	const robotStyle = (robot: Robot) => {
-		// Compute pixel positions relative to the grid
-		const left = (robot.x - props.houseGrid.minX) * tileSize + tileSize / 2 - 6; // robot 12px
+		const left = (robot.x - props.houseGrid.minX) * tileSize + tileSize / 2 - 6; // 12px robot
 		const top = (props.houseGrid.maxY - robot.y) * tileSize + tileSize / 2 - 6;
 		return {
 			width: "12px",
@@ -86,27 +85,20 @@
 		align-items: center;
 		justify-content: center;
 		border-radius: 9999px;
-		/* keep the size consistent */
 		width: 12px;
 		height: 12px;
 	}
 
-	/* Tooltip base */
 	.robot-tooltip {
 		background: rgba(0, 0, 0, 0.75);
 		color: white;
 		padding: 0.25rem 0.5rem;
 		border-radius: 0.375rem;
-		pointer-events: none; /* tooltip itself shouldn't block pointer */
+		pointer-events: none;
 		transform-origin: bottom center;
-	}
-
-	/* Optional: nicer drop shadow for tooltip */
-	.robot-tooltip {
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	}
 
-	/* Make tooltip text wrap/truncate nicely */
 	.robot-tooltip .truncate {
 		max-width: 8rem;
 		overflow: hidden;
