@@ -1,34 +1,15 @@
-<template>
-	<div class="space-y-6">
-		<!-- Status Summary -->
-		<StatSummary
-			:simulation-message="simulationMessage"
-			:simulation-status="simulationStatus"
-			:total-presents="totalPresents"
-			:unique-houses-with-one-present="uniqueHousesWithOnePresent"
-		/>
-
-		<!-- Robot Positions (Includes unique colors from Option 2) -->
-		<RobotPositionList :robot-positions="robotPositions" />
-
-		<!-- Grid Legend (Option 5) -->
-		<GridLegend />
-	</div>
-</template>
-
 <script setup lang="ts">
+	import { defineProps } from "vue";
 	import StatSummary from "./StatSummary.vue";
 	import RobotPositionList from "./RobotPositionList.vue";
-	import GridLegend from "./GridLegend.vue";
 
 	interface RobotPosition {
 		id: number;
 		name: string;
 		position: string;
-		colorClass: string;
 	}
 
-	defineProps<{
+	const props = defineProps<{
 		simulationMessage: string;
 		simulationStatus: string;
 		totalPresents: number;
@@ -36,3 +17,15 @@
 		robotPositions: RobotPosition[];
 	}>();
 </script>
+
+<template>
+	<div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+		<StatSummary
+			:simulationMessage="props.simulationMessage"
+			:simulationStatus="props.simulationStatus"
+			:totalPresents="props.totalPresents"
+			:uniqueHousesWithOnePresent="props.uniqueHousesWithOnePresent"
+		/>
+		<RobotPositionList :robotPositions="props.robotPositions" />
+	</div>
+</template>
