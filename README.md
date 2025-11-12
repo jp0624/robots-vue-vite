@@ -1,88 +1,77 @@
 # Robbie's Present Delivery Simulation
 
-A Vue 3 + Vite application simulating robots delivering presents across a grid of houses. The app allows you to visualize robot movements, track deliveries, and view simulation stats in real-time.
+A Vue 3 + Vite application that simulates robot delivery of presents across a grid of houses.  
+View the live demo here: [https://robots-vue-vite.vercel.app/](https://robots-vue-vite.vercel.app/)
 
-- **Live Demo:** [https://robots-vue-vite.vercel.app/](https://robots-vue-vite.vercel.app/)
-- **GitHub Repo:** [https://github.com/jp0624/robots-vue-vite](https://github.com/jp0624/robots-vue-vite/)
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Components](#components)
+- [Types](#types)
+- [Installation](#installation)
+- [Usage](#usage)
+- [License](#license)
 
 ---
 
 ## Features
 
-- Configurable number of robots.
-- Customizable movement sequences (`^`, `V`, `<`, `>`).
-- Step-by-step visualization or full simulation.
-- Grid dynamically expands to include all visited tiles and robot positions.
-- Tracks total presents delivered and unique houses visited.
-- Robot collision detection.
-- Color-coded robots for easy identification.
-- Smooth and responsive UI with TailwindCSS.
+- Simulate multiple robots delivering presents on a dynamic grid.
+- Supports step-by-step visualization, full run, and reset.
+- Tracks robot positions, collisions, and house visit counts.
+- Live statistics of total presents delivered and unique houses visited.
+- Smooth UI with TailwindCSS styling and responsive layout.
 
 ---
 
 ## Components
 
-### `WorldGrid.vue`
+### WorldGrid.vue
 
-Displays the dynamic grid of houses and robot positions.  
-Props:
+Renders the grid of houses and robot positions.
 
-- `houseGrid`: object containing grid rows and coordinates.
-- `robots`: list of robots and their positions.
+### GridTile.vue
 
-### `GridTile.vue`
+Represents a single tile on the grid (house/empty/robot overlay).
 
-Individual tile in the grid, shows number of presents and robots present.
+### SimulationControls.vue
 
-### `SimulationControls.vue`
+Main controls for starting, stopping, stepping, and running the simulation.
 
-Holds all input controls for the simulation: number of robots, movement sequence, speed, and action buttons.
+### ControlInputs.vue
 
-### `ControlInputs.vue`
+Inputs for number of robots and movement sequence.
 
-Handles user input for:
+### ActionButtons.vue
 
-- Number of robots.
-- Movement sequence.
+Buttons to start visualization, step forward/back, run remainder, or reset simulation.
 
-### `ActionButtons.vue`
+### SimulationStats.vue
 
-Simulation action buttons:
+Shows overall simulation summary and key statistics.
 
-- Start Visualization
-- Stop Visualization
-- Run Remainder
-- Step Forward / Step Back
-- Reset
+### RobotPositionList.vue
 
-### `SimulationStats.vue`
+Displays the positions of all robots.
 
-Displays simulation summary:
+### GridLegend.vue
 
-- Total presents delivered.
-- Unique houses visited.
-- Current simulation status and messages.
+Displays the key/legend for the grid, including color codes and icons.
 
-### `StatSummary.vue`
+### StatSummary.vue
 
-Used inside `SimulationStats.vue` to display totals and status messages with color-coded highlights.
-
-### `RobotPositionList.vue`
-
-Lists all robot positions with color-coded indicators.
-
-### `GridLegend.vue`
-
-Static legend showing meaning of colors and symbols on the grid.
+Displays simulation messages, status, total presents delivered, and unique houses visited.
 
 ---
 
 ## Types
 
-- **Robot**
+Defined in `src/types.ts`:
 
 ```ts
-interface Robot {
+export interface Robot {
 	id: number;
 	name: string;
 	x: number;
@@ -90,15 +79,41 @@ interface Robot {
 	colorClass: string;
 	collision?: boolean;
 }
-```
 
-- **SimulationState**
-
-```ts
-interface SimulationState {
+export interface SimulationState {
 	houses: [string, number][];
 	robots: Robot[];
 	moveIndex: number;
+}
+
+export interface RobotPosition {
+	id: number;
+	name: string;
+	position: string;
+	colorClass?: string;
+}
+
+export interface Tile {
+	x: number;
+	y: number;
+	key: string;
+	presents: number;
+	robotsPresent: RobotPresence[];
+	collision?: boolean;
+}
+
+export interface RobotPresence {
+	id: number;
+	colorClass: string;
+	collision?: boolean;
+}
+
+export interface HouseGrid {
+	rows: Tile[][];
+	minX: number;
+	minY: number;
+	maxX: number;
+	maxY: number;
 }
 ```
 
@@ -106,29 +121,57 @@ interface SimulationState {
 
 ## Installation
 
+1. Clone the repository:
+
 ```bash
-# Clone the repository
 git clone https://github.com/jp0624/robots-vue-vite.git
 cd robots-vue-vite
+```
 
-# Install dependencies
+2. Install dependencies:
+
+```bash
 npm install
+```
 
-# Run the dev server
+3. Run the development server:
+
+```bash
 npm run dev
+```
+
+4. Build for production:
+
+```bash
+npm run build
+```
+
+5. Preview the production build:
+
+```bash
+npm run preview
 ```
 
 ---
 
 ## Usage
 
-1. Enter the number of robots.
-2. Enter a movement sequence using `^`, `V`, `<`, `>`.
-3. Set the simulation speed (steps per second).
-4. Click **Start Viz** to visualize step-by-step.
-5. Use **Step Forward** or **Step Back** for manual control.
-6. Click **Run Remainder** to execute all remaining moves instantly.
-7. Click **Reset** to restart the simulation.
+- **Number of Robots (N):** Set the number of robots delivering presents.
+- **Movement Sequence (^V<>):** Enter the movement sequence for the robots using `^` (up), `V` (down), `<` (left), `>` (right).
+- **Start Viz:** Starts step-by-step visualization from the beginning.
+- **Run Remainder:** Completes the remaining moves in the sequence.
+- **Step Forward / Step Back:** Navigate through moves one at a time.
+- **Reset:** Reset simulation and grid state.
+
+Robots are color-coded and collisions are highlighted. The grid expands dynamically to show all visited houses.
+
+---
+
+## Repository
+
+GitHub: [https://github.com/jp0624/robots-vue-vite](https://github.com/jp0624/robots-vue-vite)
+
+Live demo: [https://robots-vue-vite.vercel.app/](https://robots-vue-vite.vercel.app/)
 
 ---
 
