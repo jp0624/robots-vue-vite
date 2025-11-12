@@ -1,5 +1,5 @@
 <template>
-	<div class="bg-white p-6 rounded-xl shadow-lg mb-8 border border-gray-200">
+	<div class="flex-1 pl-10 py-5">
 		<h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
 			Simulation Controls
 		</h2>

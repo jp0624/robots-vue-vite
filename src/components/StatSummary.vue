@@ -18,7 +18,7 @@
 			</div>
 			<div class="flex justify-between items-center">
 				<span class="text-gray-600 font-medium"
-					>Unique Houses with $\ge 1$ Present:</span
+					>Unique Houses with atleast 1 Present:</span
 				>
 				<span class="font-extrabold text-green-600 text-2xl">{{
 					uniqueHousesWithOnePresent

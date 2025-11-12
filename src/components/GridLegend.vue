@@ -20,16 +20,14 @@
 			<!-- Origin -->
 			<div class="flex items-center space-x-3">
 				<div class="w-6 h-6 bg-blue-100 ring-2 ring-blue-500 rounded-md"></div>
-				<span class="text-gray-700"
-					>Origin House $\mathbf{(0, 0)}$ (The starting point).</span
-				>
+				<span class="text-gray-700">Origin House (The starting point).</span>
 			</div>
 
 			<!-- Visited House -->
 			<div class="flex items-center space-x-3">
 				<div class="w-6 h-6 bg-yellow-100 rounded-md"></div>
 				<span class="text-gray-700"
-					>Visited House (Received $\ge 1$ present).</span
+					>Visited House (Received atleast 1 present).</span
 				>
 			</div>
 

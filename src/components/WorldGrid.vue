@@ -1,20 +1,22 @@
 <template>
-	<div
-		class="inline-block p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50 max-h-[80vh] overflow-auto"
-	>
+	<div class="w-full flex items-center justify-center">
 		<div
-			v-for="row in houseGrid.rows"
-			:key="`y-${row[0].y}`"
-			class="flex flex-nowrap"
+			class="p-4 border w-auto max-w-full inline-block border-gray-300 rounded-lg shadow-inner bg-gray-50 max-h-[80vh] overflow-auto"
 		>
-			<GridTile
-				v-for="tile in row"
-				:key="tile.key"
-				:x="tile.x"
-				:y="tile.y"
-				:presents="tile.presents"
-				:robots-present="tile.robotsPresent"
-			/>
+			<div
+				v-for="row in houseGrid.rows"
+				:key="`y-${row[0].y}`"
+				class="flex flex-nowrap"
+			>
+				<GridTile
+					v-for="tile in row"
+					:key="tile.key"
+					:x="tile.x"
+					:y="tile.y"
+					:presents="tile.presents"
+					:robots-present="tile.robotsPresent"
+				/>
+			</div>
 		</div>
 	</div>
 	<p class="mt-4 text-sm text-gray-500">

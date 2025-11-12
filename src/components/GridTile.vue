@@ -1,16 +1,9 @@
 <template>
 	<div
-		class="tile relative flex flex-col justify-center items-center text-xs p-1 transition duration-100 ease-out"
-		:class="{
-			// Visited House (Option 5)
-			'bg-yellow-100 border-yellow-300': presents > 0 && !(x === 0 && y === 0),
-			// Origin House (Option 5)
-			'bg-blue-100 ring-2 ring-blue-500 border-blue-300': x === 0 && y === 0,
-			// Unvisited
-			'bg-white border-gray-200': presents === 0 && !(x === 0 && y === 0),
-		}"
+		class="tile relative flex flex-col justify-center items-center text-xs p-1 transition duration-100 ease-out border"
+		:class="tileClasses"
 	>
-		<!-- Present Count (Option 5) -->
+		<!-- Present Count -->
 		<span
 			v-if="presents > 0"
 			class="present-count text-yellow-800 bg-yellow-200 rounded-full h-4 w-4 flex items-center justify-center font-bold"
@@ -18,10 +11,7 @@
 			{{ presents }}
 		</span>
 
-		<!-- Coordinates (Optional - visible for debugging/context) -->
-		<!-- <span class="text-xs text-gray-400 absolute bottom-0 right-0 p-0.5 opacity-50">{{ x }},{{ y }}</span> -->
-
-		<!-- Robot Icons (Option 2) -->
+		<!-- Robot Icons -->
 		<div
 			class="robot-icons absolute bottom-0 left-0 right-0 top-0 flex flex-wrap p-1 justify-center items-center"
 		>
@@ -43,17 +33,47 @@
 </template>
 
 <script setup lang="ts">
+	import { computed } from "vue";
+
 	interface RobotPresence {
 		id: number;
 		colorClass: string; // e.g., 'bg-red-500'
 	}
 
-	defineProps<{
+	const props = defineProps<{
 		x: number;
 		y: number;
 		presents: number;
 		robotsPresent: RobotPresence[];
 	}>();
+
+	// Determine if the sum of coordinates (for checkerboard pattern) is even
+	const isEvenSum = computed(() => (props.x + props.y) % 2 === 0);
+
+	// Dynamic class binding logic
+	const tileClasses = computed(() => {
+		const classes = [];
+		const isOrigin = props.x === 0 && props.y === 0;
+
+		if (isOrigin) {
+			// Priority 1: Origin (Blue)
+			classes.push("bg-blue-100", "border-2", "border-blue-500");
+		} else if (props.presents > 0) {
+			// Priority 2: Visited (Yellow)
+			classes.push("bg-yellow-100", "border-yellow-300");
+		} else {
+			// Priority 3: Unvisited - Apply Checkerboard (Light Gray / White)
+			classes.push("border-gray-200"); // Default border for checkerboard tiles
+			if (isEvenSum.value) {
+				// White tile
+				classes.push("bg-white");
+			} else {
+				// Light gray tile
+				classes.push("bg-gray-100");
+			}
+		}
+		return classes;
+	});
 </script>
 
 <style scoped>
@@ -62,21 +82,19 @@
 		height: 3rem;
 		min-width: 3rem;
 		min-height: 3rem;
-		border: 1px solid;
-		/* Override default Tailwind behavior for precise tile sizing */
+		/* Note: border is applied via class binding */
 	}
 
 	.present-count {
 		position: absolute;
 		top: 0.25rem;
 		right: 0.25rem;
-		font-size: 0.65rem; /* Smaller font for counter */
+		font-size: 0.65rem;
 		line-height: 1;
-		z-index: 20; /* Ensure present count is always on top */
+		z-index: 20;
 	}
 
 	.robot-icon {
 		position: absolute;
-		/* Use relative positioning within the flex container */
 	}
 </style>

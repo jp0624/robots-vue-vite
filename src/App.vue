@@ -1,42 +1,38 @@
 <template>
 	<div class="p-6 bg-gray-50 min-h-screen font-sans">
-		<div class="flex items-center mb-4">
-			<!-- Robot Logo --><img
+		<div
+			class="bg-white py-0 px-6 rounded-xl shadow-lg mb-8 border border-gray-200 flex items-center mb-4"
+		>
+			<img
 				src="/robot-delivery-logo.png"
 				alt="Robbie's Present Delivery Logo"
 				class="h-[10em] w-[10em] mr-3 object-contain"
 			/>
-			<h1 class="text-3xl font-extrabold text-blue-800">
-				Robbie's Present Delivery Simulator
-			</h1>
+			<hgroup class="flex flex-col mr-3">
+				<h1 class="text-3xl font-bold text-teal-600">Robbie's Present</h1>
+				<h2 class="text-2xl font-bold text-slate-600">Delivery Simulation</h2>
+			</hgroup>
+			<SimulationControls
+				:num-robots-input="numRobotsInput"
+				:move-sequence-input="moveSequenceInput"
+				:is-running="isRunning"
+				:move-index="moveIndex"
+				:move-sequence-length="moveSequenceInput.length"
+				:steps-per-second="stepsPerSecond"
+				:can-step-back="canStepBack"
+				@update:num-robots-input="numRobotsInput = $event"
+				@update:move-sequence-input="moveSequenceInput = $event"
+				@update:steps-per-second="stepsPerSecond = $event"
+				@run-full="runFullSimulation"
+				@start-viz="startVisualization"
+				@stop-viz="stopSimulationInterval"
+				@step-forward="step"
+				@step-back="stepBack"
+				@reset="initializeSimulation"
+			/>
 		</div>
-		<p class="text-gray-600 mb-6">
-			Simulate {{ numRobotsInput }} robots delivering presents based on movement
-			rules and collision checks.
-		</p>
 
-		<!-- Controls Wrapper --><SimulationControls
-			:num-robots-input="numRobotsInput"
-			:move-sequence-input="moveSequenceInput"
-			:is-running="isRunning"
-			:move-index="moveIndex"
-			:move-sequence-length="moveSequenceInput.length"
-			:steps-per-second="stepsPerSecond"
-			:can-step-back="canStepBack"
-			@update:num-robots-input="numRobotsInput = $event"
-			@update:move-sequence-input="moveSequenceInput = $event"
-			@update:steps-per-second="stepsPerSecond = $event"
-			@run-full="runFullSimulation"
-			@start-viz="startVisualization"
-			@stop-viz="stopSimulationInterval"
-			@step-forward="step"
-			@step-back="stepBack"
-			@reset="initializeSimulation"
-		/>
-
-		<!-- Status and Results -->
 		<div class="grid lg:grid-cols-3 gap-8">
-			<!-- Visualization Grid (Takes 2/3 width on large screens) -->
 			<div
 				class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg border border-gray-200 overflow-x-auto"
 			>
@@ -46,7 +42,6 @@
 				<WorldGrid :house-grid="houseGrid" :robots="robots" />
 			</div>
 
-			<!-- Stats and Legend (Takes 1/3 width on large screens) -->
 			<div class="lg:col-span-1">
 				<SimulationStats
 					:simulation-message="simulationMessage"
@@ -125,8 +120,8 @@
 
 	// --- Reactive State ---
 
-	const numRobotsInput = ref(3);
-	const moveSequenceInput = ref("^^VV<>");
+	const numRobotsInput = ref(5);
+	const moveSequenceInput = ref("^^VV<^^VV<>>^^V^^VV<>V<>^^VV<>^^V^^VV<>V<>");
 
 	const robots = ref<Robot[]>([]);
 	const houses = ref<Houses>(new Map());
@@ -226,13 +221,13 @@
 			colorClass: ROBOT_COLORS[i % ROBOT_COLORS.length], // Assign unique color
 		}));
 
-		// Start the simulation with one present at the origin (0,0)
+		// Start the simulation with an empty grid. Presents are only delivered on a move.
 		const initialHouses = new Map<string, number>();
-		initialHouses.set("0,0", 1);
+		// NOTE: Removed: initialHouses.set("0,0", 1);
 
 		houses.value = initialHouses;
 		moveIndex.value = 0;
-		totalPresentsDelivered.value = 1;
+		totalPresentsDelivered.value = 0; // CORRECTED: Starts at 0
 		isRunning.value = false;
 		moveHistory.value = []; // Reset history
 	}
@@ -276,30 +271,15 @@
 		robot.x = newX;
 		robot.y = newY;
 
-		// 3. Delivery Check: A present is delivered if, and only if,
-		//    no *other* robots are on the space (newX, newY).
-		let collision = false;
-		for (let i = 0; i < num; i++) {
-			if (i !== robotIndex) {
-				const other = robots.value[i];
-				if (other.x === newX && other.y === newY) {
-					collision = true;
-					break;
-				}
-			}
-		}
+		// 3. Deliver present unconditionally (Collision check logic removed)
+		const key = `${newX},${newY}`;
+		// Use a temporary map to trigger Vue reactivity correctly on map update
+		const newHouses = new Map(houses.value);
+		newHouses.set(key, (newHouses.get(key) || 0) + 1);
+		houses.value = newHouses;
+		totalPresentsDelivered.value++;
 
-		// 4. Deliver present if no collision
-		if (!collision) {
-			const key = `${newX},${newY}`;
-			// Use a temporary map to trigger Vue reactivity correctly on map update
-			const newHouses = new Map(houses.value);
-			newHouses.set(key, (newHouses.get(key) || 0) + 1);
-			houses.value = newHouses;
-			totalPresentsDelivered.value++;
-		}
-
-		// 5. Increment turn
+		// 4. Increment turn
 		moveIndex.value++;
 	}
 
