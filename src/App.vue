@@ -53,7 +53,7 @@
 	import WorldGrid from "./components/WorldGrid.vue";
 	import SimulationStats from "./components/SimulationStats.vue";
 	import SimulationControls from "./components/SimulationControls.vue";
-	import type { Robot, SimulationState, RobotPosition } from "../types";
+	import type { Robot, SimulationState, RobotPosition } from "./types";
 
 	// --- State Management ---
 
