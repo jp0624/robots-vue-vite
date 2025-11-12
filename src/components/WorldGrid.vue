@@ -5,7 +5,7 @@
 		>
 			<div
 				v-for="row in houseGrid.rows"
-				:key="`y-${row[0].y}`"
+				:key="`y-${row && row[0].y}`"
 				class="flex flex-nowrap"
 			>
 				<GridTile

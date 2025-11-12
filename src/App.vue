@@ -393,10 +393,10 @@
 		];
 
 		positions.forEach(({ x, y }) => {
-			minX = Math.min(minX, x);
-			minY = Math.min(minY, y);
-			maxX = Math.max(maxX, x);
-			maxY = Math.max(maxY, y);
+			minX = Math.min(minX, x) || 0;
+			minY = Math.min(minY, y) || 0;
+			maxX = Math.max(maxX, x) || 0;
+			maxY = Math.max(maxY, y) || 0;
 		});
 
 		// Add a one-unit padding around the furthest positions
