@@ -1,4 +1,3 @@
-// src/useSimulation.ts
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import type { Robot, SimulationState } from "./types";
 import { getRobotNames } from "./robotNames";

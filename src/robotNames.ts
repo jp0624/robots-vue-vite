@@ -1,4 +1,3 @@
-// robotNames.ts
 export const getRobotNames = (count: number): string[] => {
 	const baseNames = ["Robbie", "Jane", "Bob", "Robbie", "Jane", "Bob"];
 	const natoAlphabet = [
