@@ -11,7 +11,6 @@
 				class="flex justify-between items-center text-sm p-3 rounded-lg border transition duration-100 ease-in-out hover:bg-gray-50"
 			>
 				<div class="flex items-center space-x-3">
-					<!-- Color Indicator -->
 					<div :class="['w-4 h-4 rounded-full shadow', robot.colorClass]"></div>
 					<span class="font-semibold text-gray-800">{{ robot.name }}</span>
 					<span class="text-xs text-gray-500">(ID: {{ robot.id }})</span>
@@ -26,12 +25,7 @@
 </template>
 
 <script setup lang="ts">
-	export type RobotPosition = {
-		id: number;
-		name: string;
-		position: string;
-		colorClass: string;
-	};
+	import type { RobotPosition } from "../types";
 
 	defineProps<{
 		robotPositions: RobotPosition[];
