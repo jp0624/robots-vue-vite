@@ -392,6 +392,9 @@
 			...robots.value.map((r) => ({ x: r.x, y: r.y })),
 		];
 
+		if (positions.length === 0) {
+			return { rows: [], minX, minY, maxX, maxY };
+		}
 		positions.forEach(({ x, y }) => {
 			minX = Math.min(minX, x) || 0;
 			minY = Math.min(minY, y) || 0;
