@@ -112,16 +112,6 @@
 		saveHistory();
 	};
 
-	/*************  ✨ Windsurf Command ⭐  *************/
-	/**
-	 * Execute a single step forward in the simulation.
-	 * If the move sequence has been fully executed, do nothing.
-	 * Otherwise, move the robot to the next position, detect collisions,
-	 * and update the present count if the robot did not collide with another robot.
-	 * Save the current state of the simulation to the history.
-	 * If the simulation is complete, stop the visualization.
-	 */
-	/*******  100e0939-c597-40fc-ad14-9a2d4b007ded  *******/
 	const stepForward = () => {
 		if (moveIndex.value >= moveSequenceInput.value.length) return;
 
