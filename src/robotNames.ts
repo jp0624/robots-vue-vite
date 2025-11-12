@@ -1,5 +1,16 @@
 export const getRobotNames = (count: number): string[] => {
-	const baseNames = ["Robbie", "Jane", "Bob", "Robbie", "Jane", "Bob"];
+	const baseNames = [
+		"Robbie",
+		"Jane",
+		"Bob",
+		"Phil",
+		"Sarah",
+		"Henry",
+		"Emily",
+		"Max",
+		"John",
+		"Sophie",
+	];
 	const natoAlphabet = [
 		"Alpha",
 		"Bravo",
