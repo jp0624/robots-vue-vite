@@ -79,7 +79,7 @@
 
 	const canStepBack = computed(() => moveIndex.value > 0 || history.length > 1);
 
-	const getRobotColorClass = (robotId: number) => {
+	const getRobotColorClass = (robotId: number): string => {
 		const colors = [
 			"bg-red-500",
 			"bg-blue-500",
@@ -90,7 +90,7 @@
 			"bg-indigo-500",
 			"bg-teal-500",
 		];
-		return colors[(robotId - 1) % colors.length];
+		return colors[(robotId - 1) % colors.length] || "bg-gray-500"; // fallback
 	};
 
 	const resetSimulation = () => {
@@ -112,6 +112,16 @@
 		saveHistory();
 	};
 
+	/*************  ✨ Windsurf Command ⭐  *************/
+	/**
+	 * Execute a single step forward in the simulation.
+	 * If the move sequence has been fully executed, do nothing.
+	 * Otherwise, move the robot to the next position, detect collisions,
+	 * and update the present count if the robot did not collide with another robot.
+	 * Save the current state of the simulation to the history.
+	 * If the simulation is complete, stop the visualization.
+	 */
+	/*******  100e0939-c597-40fc-ad14-9a2d4b007ded  *******/
 	const stepForward = () => {
 		if (moveIndex.value >= moveSequenceInput.value.length) return;
 
@@ -263,36 +273,41 @@
 			minY = -5,
 			maxX = 5,
 			maxY = 5;
+
 		const positions = [
 			...Array.from(houses.value.keys()).map((k) => {
-				const [x, y] = k.split(",").map(Number);
+				const [xStr, yStr] = k.split(",");
+				const x = Number(xStr ?? 0);
+				const y = Number(yStr ?? 0);
 				return { x, y };
 			}),
-			...robots.value.map((r: Robot) => ({
-				x: r.x,
-				y: r.y,
+			...robots.value.map((r) => ({
+				x: r.x ?? 0,
+				y: r.y ?? 0,
 				collision: r.collision,
 			})),
 		];
+
 		positions.forEach(({ x, y }) => {
 			minX = Math.min(minX, x);
 			minY = Math.min(minY, y);
 			maxX = Math.max(maxX, x);
 			maxY = Math.max(maxY, y);
 		});
+
 		minX -= 1;
 		minY -= 1;
 		maxX += 1;
 		maxY += 1;
 
-		const rows = [];
+		const rows: Array<any> = [];
 		for (let y = maxY; y >= minY; y--) {
-			const row = [];
+			const row: Array<any> = [];
 			for (let x = minX; x <= maxX; x++) {
 				const key = `${x},${y}`;
 				const presents = houses.value.get(key) || 0;
 				const robotsPresent = robots.value.filter(
-					(r: Robot) => r.x === x && r.y === y
+					(r) => r.x === x && r.y === y
 				);
 				row.push({ x, y, key, presents, robotsPresent });
 			}
