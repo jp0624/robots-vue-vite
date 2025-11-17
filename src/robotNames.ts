@@ -1,7 +1,4 @@
-// Utility function to generate a list of robot names for the simulation
-// Accepts a requested count of robots and returns an array of unique or repeated names.
 export const getRobotNames = (count: number): string[] => {
-	// Base human-like names for the first set of robots
 	const baseNames = [
 		"Robbie",
 		"Jane",
@@ -14,8 +11,6 @@ export const getRobotNames = (count: number): string[] => {
 		"John",
 		"Sophie",
 	];
-
-	// NATO phonetic alphabet as additional name pool for more robots
 	const natoAlphabet = [
 		"Alpha",
 		"Bravo",
@@ -45,22 +40,13 @@ export const getRobotNames = (count: number): string[] => {
 		"Zulu",
 	];
 
-	// Combine both arrays to form a larger pool of potential robot names
 	const combined = [...baseNames, ...natoAlphabet];
 
-	/*
-		Generate an array of length `count`:
-		- Use Array.from with a mapping function to assign names by index.
-		- `i % combined.length` ensures that if the requested count exceeds available names,
-		  it wraps around and reuses names.
-		- The `.filter((n): n is string => !!n)` step:
-			• Ensures that the resulting array contains only defined strings.
-			• This is a TypeScript type guard to guarantee the return type `string[]`.
-	*/
+	// Map to requested count and filter out undefined
 	const names: string[] = Array.from(
 		{ length: count },
 		(_, i) => combined[i % combined.length]
-	).filter((n): n is string => !!n);
+	).filter((n): n is string => !!n); // this guarantees string[]
 
 	return names;
 };
