@@ -1,6 +1,6 @@
-# Robbie's Present Delivery Simulation
+# Robots Vue Vite
 
-A Vue 3 + Vite application that simulates robot delivery of presents across a grid of houses.  
+A Vue 3 application for exploring how robots follow delivery instructions across a grid of houses. Step through the instructions or run the full sequence, then inspect visits and collisions.  
 View the live demo here: [https://robots-vue-vite.vercel.app/](https://robots-vue-vite.vercel.app/)
 
 ---
@@ -18,11 +18,11 @@ View the live demo here: [https://robots-vue-vite.vercel.app/](https://robots-vu
 
 ## Features
 
-- Simulate multiple robots delivering presents on a dynamic grid.
+- Simulate multiple robots delivering presents on a changing grid.
 - Supports step-by-step visualization, full run, and reset.
 - Tracks robot positions, collisions, and house visit counts.
 - Live statistics of total presents delivered and unique houses visited.
-- Smooth UI with TailwindCSS styling and responsive layout.
+- Tailwind CSS styling and a responsive layout.
 
 ---
 
