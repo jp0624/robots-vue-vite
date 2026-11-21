@@ -1,5 +1,5 @@
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
-import type { Robot, SimulationState } from "./types";
+import type { HouseGrid, Robot, SimulationState, Tile } from "./types";
 import { getRobotNames } from "./robotNames";
 
 export function useSimulation(
@@ -16,7 +16,7 @@ export function useSimulation(
 	const moveIndex = ref(0);
 	const isRunning = ref(false);
 	const visualizationInterval = ref<number | null>(null);
-	const history = [] as SimulationState[];
+	const history = ref<SimulationState[]>([]);
 	const MAX_HISTORY = 100;
 
 	// --- Robot colors ---
@@ -36,15 +36,15 @@ export function useSimulation(
 
 	// --- History ---
 	const saveHistory = () => {
-		if (history.length >= MAX_HISTORY) history.shift();
-		history.push({
+		if (history.value.length >= MAX_HISTORY) history.value.shift();
+		history.value.push({
 			houses: Array.from(houses.value.entries()),
 			robots: robots.value.map((r) => ({ ...r })),
 			moveIndex: moveIndex.value,
 		});
 	};
 
-	const canStepBack = computed(() => moveIndex.value > 0 || history.length > 1);
+	const canStepBack = computed(() => history.value.length > 1);
 
 	// --- Visualization ---
 	const runVizStep = () => stepForward();
@@ -58,7 +58,7 @@ export function useSimulation(
 	};
 
 	const startVisualization = () => {
-		if (!isRunning.value) {
+		if (!isRunning.value && robots.value.length && moveIndex.value < moveSequenceInput.value.length) {
 			isRunning.value = true;
 			const delay = 1000 / stepsPerSecond.value;
 			visualizationInterval.value = setInterval(
@@ -74,13 +74,15 @@ export function useSimulation(
 		houses.value = new Map<string, number>();
 		moveIndex.value = 0;
 		isRunning.value = false;
-		history.length = 0;
+		history.value.length = 0;
 
-		const robotNames = getRobotNames(numRobotsInput.value); // string[]
+		const count = numRobotsInput.value;
+		const validCount = Number.isInteger(count) && count >= 1 && count <= 100;
+		const robotNames = getRobotNames(validCount ? count : 0);
 
-		robots.value = Array.from({ length: numRobotsInput.value }, (_, i) => ({
+		robots.value = robotNames.map((name, i) => ({
 			id: i + 1,
-			name: robotNames[i] || "Default Name", // Provide a default value here
+			name,
 			x: 0,
 			y: 0,
 			colorClass: getRobotColorClass(i + 1),
@@ -141,16 +143,15 @@ export function useSimulation(
 
 	// --- Step back ---
 	const stepBack = () => {
-		if (moveIndex.value > 0) {
-			history.pop();
-			moveIndex.value--;
-			const prevState = history[history.length - 1];
+		if (canStepBack.value && !isRunning.value) {
+			history.value.pop();
+
+			const prevState = history.value[history.value.length - 1];
 			if (prevState) {
+				moveIndex.value = prevState.moveIndex;
 				houses.value = new Map(prevState.houses);
 				robots.value = prevState.robots.map((r) => ({ ...r }));
 			}
-		} else {
-			resetSimulation();
 		}
 	};
 
@@ -158,7 +159,7 @@ export function useSimulation(
 	const runFullSimulation = () => {
 		stopVisualization();
 		isRunning.value = false;
-		while (moveIndex.value < moveSequenceInput.value.length) stepForward();
+		while (robots.value.length && moveIndex.value < moveSequenceInput.value.length) stepForward();
 	};
 
 	// --- Watchers ---
@@ -192,7 +193,8 @@ export function useSimulation(
 
 	const simulationMessage = computed(() => {
 		const totalMoves = moveSequenceInput.value.length;
-		if (totalMoves === 0) return "Simulation inputs empty.";
+		if (!robots.value.length) return "Enter a whole number of robots from 1 to 100.";
+		if (totalMoves === 0) return "Enter a move sequence to start.";
 		if (moveIndex.value >= totalMoves) return "All moves executed.";
 		if (isRunning.value)
 			return `Visualizing at ${stepsPerSecond.value} steps/sec...`;
@@ -208,6 +210,7 @@ export function useSimulation(
 		const totalMoves = moveSequenceInput.value.length;
 		const robotIndex = moveIndex.value % numRobotsInput.value;
 		const currentRobot = robots.value[robotIndex];
+		if (!robots.value.length || !totalMoves) return "";
 		const currentTurn = Math.floor(moveIndex.value / numRobotsInput.value) + 1;
 		const totalTurns = Math.ceil(totalMoves / numRobotsInput.value);
 
@@ -218,7 +221,7 @@ export function useSimulation(
 		} of ${totalMoves}. Robot ${currentRobot?.id} to move.`;
 	});
 
-	const houseGrid = computed(() => {
+	const houseGrid = computed<HouseGrid>(() => {
 		let minX = -5,
 			minY = -5,
 			maxX = 5,
@@ -248,15 +251,20 @@ export function useSimulation(
 		maxX += 1;
 		maxY += 1;
 
-		const rows: Array<any> = [];
+		const robotsByTile = new Map<string, Robot[]>();
+		for (const robot of robots.value) {
+			const key = `${robot.x},${robot.y}`;
+			const occupants = robotsByTile.get(key);
+			if (occupants) occupants.push(robot);
+			else robotsByTile.set(key, [robot]);
+		}
+		const rows: Tile[][] = [];
 		for (let y = maxY; y >= minY; y--) {
-			const row: Array<any> = [];
+			const row: Tile[] = [];
 			for (let x = minX; x <= maxX; x++) {
 				const key = `${x},${y}`;
 				const presents = houses.value.get(key) || 0;
-				const robotsPresent = robots.value.filter(
-					(r) => r.x === x && r.y === y
-				);
+				const robotsPresent = robotsByTile.get(key) ?? [];
 				row.push({ x, y, key, presents, robotsPresent });
 			}
 			rows.push(row);

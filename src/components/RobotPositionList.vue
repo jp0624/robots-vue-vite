@@ -1,21 +1,22 @@
 <template>
-	<div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-		<h3 class="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
-			Robot Positions
+	<div class="panel">
+		<h3 class="panel-heading">
+			Robot fleet
 		</h3>
 
-		<div class="space-y-2 max-h-60 overflow-y-auto">
+		<div class="fleet-list">
 			<div
 				v-for="robot in robotPositions"
 				:key="robot.id"
-				class="flex justify-between border-gray-300 items-center text-sm p-3 rounded-lg border transition duration-100 ease-in-out bg-gray-50"
+				class="fleet-row"
 			>
 				<div class="flex items-center space-x-3">
-					<div :class="['w-4 h-4 rounded-full shadow', robot.colorClass]"></div>
-					<span class="font-semibold text-gray-800">{{ robot.name }}</span>
-					<span class="text-xs text-gray-500">(ID: {{ robot.id }})</span>
+					<div :class="['fleet-dot', robot.colorClass]"></div>
+					<span class="fleet-name">{{ robot.name }}</span>
+					<span class="text-xs text-gray-500">#{{ robot.id }}</span>
 				</div>
-				<span class="font-bold text-indigo-600 text-lg font-mono">{{
+				<span v-if="robot.collision" class="fleet-blocked">Blocked</span>
+				<span class="fleet-coordinate">{{
 					robot.position
 				}}</span>
 			</div>

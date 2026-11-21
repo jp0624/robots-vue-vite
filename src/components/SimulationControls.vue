@@ -1,7 +1,7 @@
 <template>
-	<div class="flex-1 pl-10 py-5">
-		<h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
-			Simulation Controls
+	<div class="panel">
+		<h2 class="panel-heading">
+			Route controls
 		</h2>
 
 		<ControlInputs
@@ -13,13 +13,13 @@
 			@update:move-sequence-input="$emit('update:move-sequence-input', $event)"
 		/>
 
-		<div class="mb-6 mt-4">
+		<div class="speed-control">
 			<label
 				for="stepsPerSecond"
-				class="block text-sm font-medium text-gray-700"
+				class="field-label"
 			>
-				Visualization Speed:
-				<span class="font-bold text-blue-600">{{ stepsPerSecond }}</span>
+				Playback speed
+				<span class="speed-value">{{ stepsPerSecond }}</span>
 				steps/sec
 			</label>
 			<input
@@ -36,7 +36,7 @@
 				max="20"
 				step="1"
 				:disabled="isRunning"
-				class="mt-2 w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer range-lg"
+				class="speed-slider"
 			/>
 		</div>
 

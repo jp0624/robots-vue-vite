@@ -1,51 +1,22 @@
 <template>
-	<div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-		<h2 class="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
-			Simulation Summary
-		</h2>
-
-		<div class="p-3 mb-4 rounded-lg" :class="statusClass">
-			<p class="font-medium text-sm">{{ simulationMessage }}</p>
-			<p class="text-md font-bold">{{ simulationStatus }}</p>
+	<section class="panel">
+		<h2 class="panel-heading">Delivery report</h2>
+		<dl class="delivery-metrics">
+			<div><dt>Presents delivered</dt><dd>{{ totalPresents }}</dd></div>
+			<div><dt>Houses visited</dt><dd>{{ uniqueHousesWithOnePresent }}</dd></div>
+		</dl>
+		<div class="delivery-status">
+			<p>{{ simulationMessage }}</p>
+			<p v-if="simulationStatus">{{ simulationStatus }}</p>
 		</div>
-
-		<div class="space-y-1 flex border-t text-sm">
-			<div class="flex items-center pt-2 flex-1">
-				<span class="text-gray-600 font-medium">Total Presents Delivered:</span>
-				<span class="px-2.5 font-extrabold text-indigo-600 text-xl">{{
-					totalPresents
-				}}</span>
-			</div>
-			<div class="flex items-center flex-1">
-				<span class="text-gray-600 font-medium">Unique Houses Visited:</span>
-				<span class="px-2.5 font-extrabold text-green-600 text-xl">{{
-					uniqueHousesWithOnePresent
-				}}</span>
-			</div>
-		</div>
-	</div>
+	</section>
 </template>
 
 <script setup lang="ts">
-	import { computed } from "vue";
-
-	const props = defineProps<{
-		simulationMessage?: string;
-		simulationStatus?: string;
-		totalPresents?: number;
-		uniqueHousesWithOnePresent?: number;
+	defineProps<{
+		simulationMessage: string;
+		simulationStatus: string;
+		totalPresents: number;
+		uniqueHousesWithOnePresent: number;
 	}>();
-
-	// Default to empty string to avoid calling .includes on undefined
-	const statusClass = computed(() => {
-		const status = props.simulationStatus ?? "";
-
-		if (status.includes("Simulation Ended")) {
-			return "bg-green-100 text-green-800 border border-green-300";
-		}
-		if (status.includes("Ready to start")) {
-			return "bg-blue-100 text-blue-800 border border-blue-300";
-		}
-		return "bg-gray-50 text-gray-800 border border-gray-300";
-	});
 </script>

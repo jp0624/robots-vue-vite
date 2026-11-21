@@ -18,6 +18,7 @@ export interface RobotPosition {
 	name: string;
 	position: string;
 	colorClass?: string;
+	collision?: boolean;
 }
 
 export interface Tile {
@@ -25,13 +26,7 @@ export interface Tile {
 	y: number;
 	key: string;
 	presents: number;
-	robotsPresent: RobotPresence[];
-	collision?: boolean;
-}
-
-export interface RobotPresence {
-	id: number;
-	colorClass: string;
+	robotsPresent: Robot[];
 	collision?: boolean;
 }
 

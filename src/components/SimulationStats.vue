@@ -1,5 +1,5 @@
 <template>
-	<div class="space-y-6">
+	<div class="dispatch-sidebar">
 		<!-- Status Summary -->
 		<StatSummary
 			:simulation-message="simulationMessage"
@@ -11,8 +11,6 @@
 		<!-- Robot Positions -->
 		<RobotPositionList :robot-positions="robotPositions" />
 
-		<!-- Grid Legend -->
-		<GridLegend />
 	</div>
 </template>
 
@@ -20,7 +18,6 @@
 	import type { RobotPosition } from "../types";
 	import StatSummary from "./StatSummary.vue";
 	import RobotPositionList from "./RobotPositionList.vue";
-	import GridLegend from "./GridLegend.vue";
 
 	defineProps<{
 		simulationMessage: string;

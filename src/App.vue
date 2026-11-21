@@ -1,51 +1,41 @@
 <template>
-	<div class="p-6 bg-gray-50 min-h-screen font-sans">
-		<div
-			class="bg-white py-0 px-6 rounded-xl shadow-lg mb-8 border border-gray-200 flex items-center mb-4"
-		>
-			<img
-				src="/robot-delivery-logo.png"
-				alt="Robbie's Present Delivery Logo"
-				class="h-[10em] w-[10em] mr-3 object-contain"
-			/>
-			<hgroup class="flex flex-col mr-3">
-				<h1 class="text-3xl font-bold text-teal-600">Robbie's Present</h1>
-				<h2 class="text-2xl font-bold text-slate-600">Delivery Simulation</h2>
-			</hgroup>
+	<main class="dispatch">
+		<header class="masthead">
+			<img src="/robot-delivery-logo.png" alt="" width="76" height="76" />
+			<h1>Robbie’s Present <span>Delivery System</span></h1>
+		</header>
 
-			<SimulationControls
-				:num-robots-input="numRobotsInput"
-				:move-sequence-input="moveSequenceInput"
-				:is-running="isRunning"
-				:move-index="moveIndex"
-				:move-sequence-length="moveSequenceInput.length"
-				:steps-per-second="stepsPerSecond"
-				:can-step-back="canStepBack"
-				@update:num-robots-input="numRobotsInput = $event"
-				@update:move-sequence-input="moveSequenceInput = $event"
-				@update:steps-per-second="stepsPerSecond = $event"
-				@run-full="runFullSimulation"
-				@start-viz="startVisualization"
-				@stop-viz="stopVisualization"
-				@step-forward="stepForward"
-				@step-back="stepBack"
-				@reset="resetSimulation"
-			/>
+		<div class="dispatch-layout">
+			<WorldGrid :house-grid="houseGrid" />
+			<aside class="dispatch-sidebar" aria-label="Simulation controls and results">
+				<SimulationControls
+					:num-robots-input="numRobotsInput"
+					:move-sequence-input="moveSequenceInput"
+					:is-running="isRunning"
+					:move-index="moveIndex"
+					:move-sequence-length="robotPositions.length ? moveSequenceInput.length : 0"
+					:steps-per-second="stepsPerSecond"
+					:can-step-back="canStepBack"
+					@update:num-robots-input="numRobotsInput = $event"
+					@update:move-sequence-input="moveSequenceInput = $event"
+					@update:steps-per-second="stepsPerSecond = $event"
+					@run-full="runFullSimulation"
+					@start-viz="startVisualization"
+					@stop-viz="stopVisualization"
+					@step-forward="stepForward"
+					@step-back="stepBack"
+					@reset="resetSimulation"
+				/>
+				<SimulationStats
+					:simulation-message="simulationMessage"
+					:simulation-status="simulationStatus"
+					:total-presents="totalPresents"
+					:unique-houses-with-one-present="uniqueHousesWithOnePresent"
+					:robot-positions="robotPositions"
+				/>
+			</aside>
 		</div>
-
-		<div class="grid lg:grid-cols-3 gap-6">
-			<div class="lg:col-span-2">
-				<WorldGrid :house-grid="houseGrid" :robots="robots" />
-			</div>
-			<SimulationStats
-				:simulation-message="simulationMessage"
-				:simulation-status="simulationStatus"
-				:total-presents="totalPresents"
-				:unique-houses-with-one-present="uniqueHousesWithOnePresent"
-				:robot-positions="robotPositions"
-			/>
-		</div>
-	</div>
+	</main>
 </template>
 
 <script setup lang="ts">
@@ -58,7 +48,6 @@
 		numRobotsInput,
 		moveSequenceInput,
 		stepsPerSecond,
-		robots,
 		moveIndex,
 		isRunning,
 		canStepBack,

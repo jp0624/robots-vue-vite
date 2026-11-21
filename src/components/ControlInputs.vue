@@ -1,28 +1,29 @@
 <template>
-	<div class="grid md:grid-cols-3 gap-6">
+	<div class="route-fields">
 		<div>
-			<label for="numRobots" class="block text-sm font-medium text-gray-700"
-				>Number of Robots (N)</label
+			<label for="numRobots" class="field-label"
+				>Robots</label
 			>
 			<input
 				type="number"
 				id="numRobots"
-				:value="numRobotsInput"
+				:value="numRobotsInput || ''"
+                :aria-invalid="numRobotsInput < 1 || numRobotsInput > 100"
 				@input="
 					$emit(
 						'update:num-robots-input',
-						parseInt(($event.target as HTMLInputElement)?.value ?? '0')
+						($event.target as HTMLInputElement).valueAsNumber || 0
 					)
 				"
 				:disabled="isRunning"
-				min="1"
-				class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
+				min="1" max="100"
+				class="route-input"
 			/>
 		</div>
 
-		<div class="md:col-span-2">
-			<label for="moveSequence" class="block text-sm font-medium text-gray-700"
-				>Movement Sequence (^V&lt;>)</label
+		<div >
+			<label for="moveSequence" class="field-label"
+				>Move sequence</label
 			>
 			<input
 				type="text"
@@ -35,10 +36,12 @@
 					)
 				"
 				:disabled="isRunning"
-				class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border font-mono uppercase tracking-widest focus:ring-blue-500 focus:border-blue-500"
+				class="route-input route-sequence"
+                aria-describedby="move-guide" spellcheck="false"
 			/>
 		</div>
 	</div>
+    <p id="move-guide" class="move-guide"><kbd>^</kbd> Up <kbd>V</kbd> Down <kbd>&lt;</kbd> Left <kbd>&gt;</kbd> Right</p>
 </template>
 
 <script setup lang="ts">
