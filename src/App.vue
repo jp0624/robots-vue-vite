@@ -1,7 +1,7 @@
 <template>
 	<main class="dispatch">
 		<header class="masthead">
-			<img src="/robot-delivery-logo.png" alt="" width="76" height="76" />
+			<img src="/robbie-logo.webp" alt="" width="76" height="76" />
 			<h1>Robbie’s Present <span>Delivery System</span></h1>
 		</header>
 

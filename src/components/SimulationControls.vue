@@ -7,7 +7,6 @@
 		<ControlInputs
 			:num-robots-input="numRobotsInput"
 			:move-sequence-input="moveSequenceInput"
-			:steps-per-second="stepsPerSecond"
 			:is-running="isRunning"
 			@update:num-robots-input="$emit('update:num-robots-input', $event)"
 			@update:move-sequence-input="$emit('update:move-sequence-input', $event)"
